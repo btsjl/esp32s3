@@ -1,9 +1,26 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
 <head>
-  <title>Hello</title>
+    <meta charset="utf-8">
 </head>
 <body>
-  <h1>Hello, world!</h1>
+     <h2>ESP32 网页</h2>
+     <!-- 创建一个ID位dht的盒子用于显示获取到的数据 -->
+     <div id="dht">
+     </div>
 </body>
-</html>
+<script>
+     // 设置一个定时任务, 1000ms执行一次
+     setInterval(function () {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                // 此代码会搜索ID为dht的组件，然后使用返回内容替换组件内容
+                document.getElementById("dht").innerHTML = this.responseText;
+            }
+        };
+        // 使用GET的方式请求 /dht
+        xhttp.open("GET", "/dht", true);
+        xhttp.send();
+    }, 1000)
+</script>
