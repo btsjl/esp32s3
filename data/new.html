@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>温度监控系统</title>
+</head>
+
+<body>
+    <div style="text-align: center;">
+        <a>温度:</a><a id="dht"></a>
+    </div>
+    <form id="myForm" style="color:red;text-align:center;font-size:large;">
+        <label for="jsonData">输入温度</label><br>
+        <input type="text" id="jsonData" name="jsonData" style="color:red;text-align:center;font-size:large;">
+        <button type="button" onclick="sendData()" style="color:red;text-align:center;font-size:large;">发送</button>
+    </form>
+    <script>
+        function sendData() {
+            var jsonData = document.getElementById("jsonData").value;
+            var xhr = new XMLHttpRequest();
+            var url = "/json"; // Replace this with your server endpoint
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Request was successful
+                    console.log(xhr.responseText);
+                } else {
+                    // Request failed
+                    console.error('Error:', xhr.statusText);
+                }
+            };
+            xhr.send(jsonData);
+        }
+    </script>
+</body>
+<script>
+    // 设置一个定时任务, 1000ms执行一次
+    setInterval(function () {
+       var xhttp = new XMLHttpRequest();
+       xhttp.onreadystatechange = function () {
+           if (this.readyState == 4 && this.status == 200) {
+               // 此代码会搜索ID为dht的组件，然后使用返回内容替换组件内容
+               document.getElementById("dht").innerHTML = this.responseText;
+           }
+       };
+       // 使用GET的方式请求 /dht
+       xhttp.open("GET", "/dht", true);
+       xhttp.send();
+   }, 10)
+</script>
+</html>
