@@ -16,12 +16,12 @@ const char *password = "123456789liu";
 int temp = 0;
 JsonDocument doc;
 
-String processor(const String& var)
+String processor(const String &var)
 {
-  if(var=="temp")
-  return String(temp);
+  if (var == "temp")
+    return String(temp);
   else
-  return String();
+    return String();
 }
 
 void notFound(AsyncWebServerRequest *request)
@@ -53,14 +53,24 @@ void callback(AsyncWebServerRequest *request)
 void body(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
 {
   deserializeJson(doc, (const char *)data);
+  temp = doc["data"].as<int>();
   Serial.println(doc["data"].as<const char *>());
 }
 
 void setup()
 {
+  IPAddress staticIP(192, 168, 137, 10);
+  IPAddress gateway(192, 168, 137, 1);
+  IPAddress subnet(255, 255, 255, 0);
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
+  if (WiFi.config(staticIP,gateway,subnet)==false)
+  {
+    Serial.println("STA Failed!");
+    return;
+  }
+
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
     Serial.printf("WiFi Failed!\n");
@@ -71,16 +81,13 @@ void setup()
     Serial.println("An Error has occurred while mounting LittleFS");
     return;
   }
-  Serial.print("IP Address: ");
+  Serial.print("IP Address: http://");
   Serial.println(WiFi.localIP());
   server.on("/json", HTTP_POST, callback, upload, body);
-  server.on("/",HTTP_GET,[](AsyncWebServerRequest *request){
-    request->send(LittleFS, "/new.html", "text/html",false,processor);
-  });
-  server.on("/dht", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200,"text/plain",String(temp).c_str());
-    temp++;
-  });
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/new.html", "text/html",  false,  processor); });
+  server.on("/dht", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send_P(200,  "text/plain",  String(temp).c_str()); });
   server.onNotFound(notFound);
   server.begin();
 }

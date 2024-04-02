@@ -1,24 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 
+
+<style>
+    #jsonData {
+        width: 40%;
+        box-sizing: border-box;
+        border: 2px solid #ccc;
+        font-size: 16px;
+        padding: 12px 20px 12px 40px;
+        border-radius: 16px;
+    }
+
+    #button {
+        /* 文字颜色 */
+        color: #0099CC;
+        /* 清除背景色 */
+        background: transparent;
+        /* 边框样式、颜色、宽度 */
+        border: 2px solid #0099CC;
+        /* 给边框添加圆角 */
+        border-radius: 16px;
+        /* 字母转大写 */
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        text-align: center;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        -webkit-transition-duration: 0.4s;
+        /* Safari */
+        transition-duration: 0.4s;
+        cursor: pointer;
+        text-decoration: none;
+        text-transform: uppercase;
+        background-color: white;
+        color: black;
+        border: 2px solid #008CBA;
+    }
+
+    #button:hover {
+        background-color: #008CBA;
+        color: white;
+    }
+</style>
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <title>温度监控系统</title>
 </head>
 
 <body>
-    <div style="text-align: center;">
+    <div style="font-size:xx-large;">
         <a>温度:</a><a id="dht"></a>
     </div>
-    <form id="myForm" style="color:red;text-align:center;font-size:large;">
-        <label for="jsonData">输入温度</label><br>
-        <input type="text" id="jsonData" name="jsonData" style="color:red;text-align:center;font-size:large;">
-        <button type="button" onclick="sendData()" style="color:red;text-align:center;font-size:large;">发送</button>
+    <form id="myForm" style="text-align: center;">
+
+        <input type="text" id="jsonData" name="jsonData" placeholder="输入温度"><br>
+        <button type="button" id="button" onclick="sendData()">发送</button>
     </form>
     <script>
         function sendData() {
-            var jsonData = document.getElementById("jsonData").value;
+            var Data = document.getElementById("jsonData").value;
+            document.getElementById("jsonData").value = "";
+            var json_str = { "data": Data };
+            var jsonData = JSON.stringify(json_str);
             var xhr = new XMLHttpRequest();
             var url = "/json"; // Replace this with your server endpoint
             xhr.open("POST", url, true);
@@ -33,22 +81,33 @@
                 }
             };
             xhr.send(jsonData);
+
+        }
+        function getdata() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    // 此代码会搜索ID为dht的组件，然后使用返回内容替换组件内容
+                    document.getElementById("dht").innerHTML = this.responseText;
+                }
+            };
+            xhttp.open("GET", "/dht", true);
+            xhttp.send();
+        }
+
+        function listenenterkey() {
+            document.getElementById("myForm").addEventListener("keydown", function (event) {
+                if (event.keyCode === 13) {
+                    event.preventDefault(); // 阻止默认的表单提交行为
+                    sendData();
+                }
+            });
         }
     </script>
 </body>
 <script>
-    // 设置一个定时任务, 1000ms执行一次
-    setInterval(function () {
-       var xhttp = new XMLHttpRequest();
-       xhttp.onreadystatechange = function () {
-           if (this.readyState == 4 && this.status == 200) {
-               // 此代码会搜索ID为dht的组件，然后使用返回内容替换组件内容
-               document.getElementById("dht").innerHTML = this.responseText;
-           }
-       };
-       // 使用GET的方式请求 /dht
-       xhttp.open("GET", "/dht", true);
-       xhttp.send();
-   }, 10)
+    setInterval(getdata, 1000);
+    listenenterkey();
 </script>
+
 </html>
